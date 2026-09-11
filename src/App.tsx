@@ -1,8 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+type Task = {
+  id: number;
+  text: string;
+  done: boolean;
+};
 
 function App() {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    const saved = localStorage.getItem('tasks');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [input, setInput] = useState('');
+
+  function toggleTask(id: number) {
+  setTasks(tasks.map(task =>
+    task.id === id ? { ...task, done: !task.done } : task
+  ));
+}
+
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
 
   function handleAdd() {
     if (!input.trim()) return;
@@ -31,7 +50,13 @@ function App() {
 
       <ul>
         {tasks.map((task) => (
-          <li key={task.id} className="py-1">{task.text}</li>
+          <li
+            key={task.id}
+            onClick={() => toggleTask(task.id)}
+            className={`py-1 cursor-pointer ${task.done ? 'line-through text-gray-400' : ''}`}
+          >
+            {task.text}
+          </li>
         ))}
       </ul>
     </div>
